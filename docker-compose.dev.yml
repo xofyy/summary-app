@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # MongoDB Database for Development
+  mongodb-dev:
+    image: mongo:7.0
+    container_name: summary-app-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: devpassword123
+      MONGO_INITDB_DATABASE: summary-app-dev
+    volumes:
+      - mongodb_dev_data:/data/db
+    networks:
+      - summary-app-dev-network
+
+  # Redis for Development
+  redis-dev:
+    image: redis:7.2-alpine
+    container_name: summary-app-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - summary-app-dev-network
+
+volumes:
+  mongodb_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  summary-app-dev-network:
+    driver: bridge

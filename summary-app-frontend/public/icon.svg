@@ -1,0 +1,14 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" fill="#2563eb" rx="24"/>
+  <g fill="white">
+    <!-- Document icon -->
+    <rect x="48" y="40" width="96" height="112" rx="8" fill="white"/>
+    <rect x="56" y="56" width="80" height="4" fill="#2563eb"/>
+    <rect x="56" y="68" width="80" height="4" fill="#2563eb"/>
+    <rect x="56" y="80" width="80" height="4" fill="#2563eb"/>
+    <rect x="56" y="92" width="60" height="4" fill="#2563eb"/>
+    <!-- AI spark/star icon -->
+    <circle cx="136" cy="64" r="12" fill="#f59e0b"/>
+    <path d="M136 52 l4 8 l8 4 l-8 4 l-4 8 l-4 -8 l-8 -4 l8 -4 z" fill="white"/>
+  </g>
+</svg>

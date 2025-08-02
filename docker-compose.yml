@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: summary-app-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: summary-app
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - summary-app-network
+
+  # Redis (for BullMQ queues)
+  redis:
+    image: redis:7.2-alpine
+    container_name: summary-app-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - summary-app-network
+
+  # Backend (NestJS)
+  backend:
+    build:
+      context: ./summary-app-backend
+      dockerfile: Dockerfile
+    container_name: summary-app-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/summary-app?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      JWT_EXPIRES_IN: 7d
+      GOOGLE_APPLICATION_CREDENTIALS: /app/config/gcp-service-account.json
+      GOOGLE_CLOUD_PROJECT_ID: ${GOOGLE_CLOUD_PROJECT_ID}
+      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-us-central1}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./config/gcp-service-account.json:/app/config/gcp-service-account.json:ro
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - summary-app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (React PWA)
+  frontend:
+    build:
+      context: ./summary-app-frontend
+      dockerfile: Dockerfile
+    container_name: summary-app-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - summary-app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  summary-app-network:
+    driver: bridge
