@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Summary, SummaryDocument } from '../content/schemas/summary.schema';
 import { Article, ArticleDocument } from '../content/schemas/article.schema';
+import { Source, SourceDocument } from '../content/schemas/source.schema';
 import { VertexAIService } from '../ai/vertex-ai.service';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class SummaryService {
   constructor(
     @InjectModel(Summary.name) private summaryModel: Model<SummaryDocument>,
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
+    @InjectModel(Source.name) private sourceModel: Model<SourceDocument>,
     private vertexAIService: VertexAIService,
   ) {}
 
@@ -104,6 +106,42 @@ export class SummaryService {
     }
 
     return summary;
+  }
+
+  async getStats(userId?: string) {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const [totalSummaries, totalSources, todaySummaries, avgReadTime] = await Promise.all([
+        this.summaryModel.countDocuments().exec(),
+        this.sourceModel.countDocuments().exec(),
+        this.summaryModel.countDocuments({
+          createdAt: { $gte: today }
+        }).exec(),
+        this.summaryModel.aggregate([
+          { $group: { _id: null, avgReads: { $avg: '$readCount' } } }
+        ]).exec()
+      ]);
+
+      const avgReadTimeMinutes = avgReadTime.length > 0 ? Math.round(avgReadTime[0].avgReads * 0.5) : 2;
+
+      return {
+        totalSummaries,
+        totalSources,
+        todaySummaries,
+        avgReadTime: avgReadTimeMinutes
+      };
+    } catch (error) {
+      console.error('Error getting stats:', error);
+      // Return fallback stats
+      return {
+        totalSummaries: 0,
+        totalSources: 0,
+        todaySummaries: 0,
+        avgReadTime: 2
+      };
+    }
   }
 
   private extractKeywords(text: string): string[] {

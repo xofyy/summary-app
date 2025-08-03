@@ -8,11 +8,270 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: 100vh;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  color: #1f2937;
 }
 
-.dark body {
+html.dark body {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f9fafb;
+}
+
+/* Force dark mode styles */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark * {
+  border-color: #374151;
+}
+
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+  color: #f9fafb;
+}
+
+html.dark p, html.dark span, html.dark div {
+  color: #d1d5db;
+}
+
+html.dark .text-secondary-900 {
+  color: #f9fafb !important;
+}
+
+html.dark .text-secondary-800 {
+  color: #e5e7eb !important;
+}
+
+html.dark .text-secondary-700 {
+  color: #d1d5db !important;
+}
+
+html.dark .text-secondary-600 {
+  color: #9ca3af !important;
+}
+
+html.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+html.dark .bg-secondary-50 {
+  background-color: #374151 !important;
+}
+
+html.dark .bg-secondary-100 {
+  background-color: #4b5563 !important;
+}
+
+/* Additional dark mode color fixes */
+html.dark .text-secondary-300 {
+  color: #d1d5db !important;
+}
+
+html.dark .text-secondary-400 {
+  color: #9ca3af !important;
+}
+
+html.dark .text-secondary-500 {
+  color: #6b7280 !important;
+}
+
+html.dark .bg-secondary-200 {
+  background-color: #374151 !important;
+}
+
+html.dark .bg-secondary-300 {
+  background-color: #4b5563 !important;
+}
+
+html.dark .border-secondary-200 {
+  border-color: #374151 !important;
+}
+
+html.dark .border-secondary-300 {
+  border-color: #4b5563 !important;
+}
+
+html.dark .border-secondary-600 {
+  border-color: #4b5563 !important;
+}
+
+html.dark .border-secondary-700 {
+  border-color: #374151 !important;
+}
+
+/* Fix specific component backgrounds */
+html.dark .bg-white\/70,
+html.dark .bg-white\/80,
+html.dark .bg-white\/90 {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+html.dark .bg-secondary-50 {
+  background-color: #374151 !important;
+}
+
+/* Card and modal backgrounds */
+html.dark .shadow-soft,
+html.dark .shadow-medium,
+html.dark .shadow-lg,
+html.dark .shadow-xl,
+html.dark .shadow-2xl {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Fix backdrop blur backgrounds in dark mode */
+html.dark .backdrop-blur-sm,
+html.dark .backdrop-blur,
+html.dark .backdrop-blur-lg {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+/* Specific fixes for common pattern combinations */
+html.dark .bg-white.dark\:bg-secondary-800 {
+  background-color: #1f2937 !important;
+}
+
+html.dark .bg-secondary-50.dark\:bg-secondary-900 {
+  background-color: #0f172a !important;
+}
+
+/* Fix for glassmorphism effects */
+html.dark .bg-white\/70.dark\:bg-secondary-800\/70 {
+  background-color: rgba(31, 41, 55, 0.7) !important;
+}
+
+html.dark .bg-white\/80.dark\:bg-secondary-800\/80 {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+html.dark .bg-white\/90.dark\:bg-secondary-800\/90 {
+  background-color: rgba(31, 41, 55, 0.9) !important;
+}
+
+/* Improved text contrast for dark mode */
+.dark {
+  color-scheme: dark;
+}
+
+/* Smooth theme transition system */
+html {
+  transition: color-scheme 0.3s ease;
+}
+
+body {
+  transition: background 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Essential element transitions with easing */
+.bg-white,
+.bg-secondary-50,
+.bg-secondary-100,
+.bg-secondary-200,
+.bg-secondary-800,
+.bg-secondary-900,
+[class*="bg-white"],
+[class*="bg-secondary"] {
+  transition: background-color 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.text-white,
+.text-secondary-900,
+.text-secondary-800,
+.text-secondary-700,
+.text-secondary-600,
+.text-secondary-500,
+.text-secondary-400,
+.text-secondary-300,
+[class*="text-secondary"] {
+  transition: color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Border transitions */
+[class*="border-secondary"] {
+  transition: border-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Shadow transitions */
+[class*="shadow"] {
+  transition: box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Ensure input placeholder colors have good contrast */
+input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+}
+
+.dark input::placeholder {
+  color: #9ca3af !important;
+  opacity: 1;
+}
+
+/* Force input text colors for better contrast */
+input[type="email"], 
+input[type="password"], 
+input[type="text"], 
+textarea {
+  color: #1f2937 !important;
+  background-color: #f9fafb !important;
+}
+
+.dark input[type="email"], 
+.dark input[type="password"], 
+.dark input[type="text"], 
+.dark textarea {
+  color: #f9fafb !important;
+  background-color: #1f2937 !important;
+}
+
+/* Remove any gradient text clipping that causes invisible text */
+.bg-clip-text {
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+}
+
+/* Fix only problematic transparent text */
+.text-transparent {
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+}
+
+/* Ensure white text remains white */
+.text-white {
+  color: #ffffff !important;
+}
+
+/* Ensure specific dark text classes work */
+.text-secondary-900 {
+  color: #0f172a !important;
+}
+
+.dark .text-white {
+  color: #ffffff !important;
+}
+
+.dark .text-secondary-900 {
+  color: #f9fafb !important;
+}
+
+/* Fix specific problematic combinations */
+.bg-gradient-to-r.bg-clip-text {
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+}
+
+/* Better focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+.dark *:focus-visible {
+  outline-color: #38bdf8;
 }
 
 /* Staggered animation for cards */
@@ -102,4 +361,143 @@ html {
   );
   transform: translateX(-100%);
   animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .mobile-compact {
+    padding: 1rem !important;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+  }
+  
+  /* Optimize hero section for mobile */
+  .hero-mobile {
+    padding: 2rem 1rem !important;
+    text-align: center !important;
+  }
+  
+  .hero-mobile h1 {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .hero-mobile p {
+    font-size: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  /* Improve card layout on mobile */
+  .mobile-card {
+    padding: 1.5rem !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .mobile-card h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .mobile-card .keywords {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  /* Better button layout on mobile */
+  .mobile-buttons {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-buttons a,
+  .mobile-buttons button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* Optimize empty state for mobile */
+  .mobile-empty-state {
+    padding: 2rem 1rem !important;
+  }
+  
+  .mobile-empty-state h3 {
+    font-size: 1.75rem !important;
+  }
+  
+  .mobile-empty-state .feature-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+/* Touch targets for mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-target {
+    padding: 0.75rem !important;
+  }
+  
+  /* Improve sidebar for mobile */
+  .mobile-sidebar {
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+  
+  /* Stack stats on mobile */
+  .stats-mobile {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Compact search on mobile */
+  .search-mobile {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .search-mobile select {
+    min-width: unset !important;
+  }
 }

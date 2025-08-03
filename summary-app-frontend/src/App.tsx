@@ -16,16 +16,22 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const token = useAuthStore((state) => state.token);
   
-  console.log('ProtectedRoute check:', { isAuthenticated, hasToken: !!token });
-  
-  // Use token presence as primary authentication check
+  // Use both token presence and authentication flag
   const isUserAuthenticated = isAuthenticated && !!token;
   
+  console.log('🛡️ ProtectedRoute check:', { 
+    isAuthenticated, 
+    hasToken: !!token, 
+    isUserAuthenticated,
+    path: window.location.pathname
+  });
+  
   if (!isUserAuthenticated) {
-    console.log('Not authenticated, redirecting to login');
+    console.log('🚫 Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
+  console.log('✅ Authentication passed, rendering protected content');
   return (
     <ErrorBoundary>
       {children}

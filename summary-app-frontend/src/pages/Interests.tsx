@@ -55,112 +55,134 @@ const Interests: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-3xl sm:text-4xl font-heading font-bold bg-gradient-to-r from-secondary-900 to-secondary-700 dark:from-white dark:to-secondary-200 bg-clip-text text-transparent mb-4">
-          İlgi Alanlarınızı Seçin
+      {/* Header Section */}
+      <div className="text-center mb-12 animate-fade-in">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-3xl mb-6 shadow-xl">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-heading font-bold text-secondary-900 dark:text-white mb-4">
+          İlgi Alanlarınızı Keşfedin 🎯
         </h1>
-        <p className="text-lg text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-          Size özel içerik sunabilmemiz için ilgi alanlarınızı belirtin. Seçtiğiniz konulara göre haber özetleri kişiselleştirilecek.
+        <p className="text-lg text-secondary-600 dark:text-secondary-300 max-w-2xl mx-auto leading-relaxed">
+          Size özel içerik sunabilmemiz için ilgi alanlarınızı belirtin. Seçtiğiniz konulara göre haber özetleri kişiselleştirilecek ve daha anlamlı deneyim yaşayacaksınız.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {/* Interest Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {availableInterests.map((interest, index) => (
             <button
               key={interest}
               type="button"
               onClick={() => toggleInterest(interest)}
-              className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 animate-fade-in ${
+              className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 animate-fade-in overflow-hidden ${
                 selectedInterests.includes(interest)
-                  ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 text-primary-700 dark:text-primary-300 shadow-medium hover:shadow-glow'
-                  : 'border-secondary-200 dark:border-secondary-700 bg-white/70 dark:bg-secondary-800/70 text-secondary-700 dark:text-secondary-300 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 shadow-soft hover:shadow-medium'
+                  ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-purple-50 dark:from-primary-900/50 dark:to-purple-900/50 text-primary-700 dark:text-primary-300 shadow-xl hover:shadow-2xl'
+                  : 'border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 shadow-lg hover:shadow-xl'
               }`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex flex-col items-center space-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="relative flex flex-col items-center space-y-2">
                 {selectedInterests.includes(interest) && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-medium">
+                  <div className="absolute -top-3 -right-3 w-7 h-7 bg-gradient-to-r from-primary-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                 )}
-                <span className="text-sm sm:text-base font-medium text-center leading-tight">
+                <span className="text-sm sm:text-base font-semibold text-center leading-tight">
                   {interest}
                 </span>
               </div>
-              
-              <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 opacity-0 transition-opacity duration-300 -z-10 ${
-                selectedInterests.includes(interest) ? 'group-hover:opacity-10' : 'group-hover:opacity-5'
-              }`}></div>
             </button>
           ))}
         </div>
 
+        {/* Selected Interests Summary */}
         {selectedInterests.length > 0 && (
-          <div className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/30 dark:to-accent-900/30 rounded-2xl p-6 border border-primary-200 dark:border-primary-700 animate-slide-up">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/50 dark:to-purple-900/50 rounded-3xl p-6 border border-indigo-200 dark:border-indigo-700 animate-slide-up shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-heading font-bold text-indigo-800 dark:text-indigo-200">
+                  Seçili İlgi Alanları ({selectedInterests.length})
+                </h3>
               </div>
-              <h3 className="text-lg font-heading font-semibold text-primary-800 dark:text-primary-200">
-                Seçili İlgi Alanları ({selectedInterests.length})
-              </h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedInterests.map((interest) => (
-                <span 
-                  key={interest} 
-                  className="inline-flex items-center px-3 py-1 bg-primary-100 dark:bg-primary-800 text-primary-700 dark:text-primary-300 text-sm font-medium rounded-full border border-primary-200 dark:border-primary-600"
-                >
-                  {interest}
-                </span>
-              ))}
+              <div className="flex flex-wrap gap-3">
+                {selectedInterests.map((interest, index) => (
+                  <span 
+                    key={interest} 
+                    className="inline-flex items-center px-4 py-2 bg-white dark:bg-secondary-800 text-indigo-700 dark:text-indigo-300 text-sm font-semibold rounded-xl border border-indigo-200 dark:border-indigo-700 shadow-md animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {interest}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
+        {/* Error Message */}
         {error && (
-          <div className="bg-error-50 dark:bg-error-900/30 border border-error-200 dark:border-error-700 rounded-2xl p-6 animate-slide-up">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-error-100 dark:bg-error-800 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative overflow-hidden bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700/50 rounded-3xl p-6 animate-slide-up shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex items-center space-x-3">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-error-700 dark:text-error-300 font-medium">{error}</p>
+              <p className="text-red-700 dark:text-red-300 font-semibold">{error}</p>
             </div>
           </div>
         )}
 
-        <div className="text-center pt-4">
+        {/* Submit Button */}
+        <div className="text-center pt-6">
           <button
             type="submit"
             disabled={selectedInterests.length === 0 || isLoading}
-            className="inline-flex items-center space-x-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-medium hover:shadow-glow transform hover:scale-105 font-medium disabled:transform-none disabled:shadow-medium"
+            className="relative overflow-hidden inline-flex items-center space-x-3 bg-gradient-to-r from-primary-500 to-purple-600 text-white px-8 py-4 rounded-2xl hover:from-primary-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 font-semibold disabled:transform-none text-lg"
           >
-            {isLoading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>Kaydediliyor...</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>
-                  {selectedInterests.length === 0 
-                    ? 'En az bir ilgi alanı seçin' 
-                    : `Devam Et (${selectedInterests.length} seçili)`
-                  }
-                </span>
-              </>
-            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center space-x-3">
+              {isLoading ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Kaydediliyor...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span>
+                    {selectedInterests.length === 0 
+                      ? 'En az bir ilgi alanı seçin' 
+                      : `Devam Et (${selectedInterests.length} seçili)`
+                    }
+                  </span>
+                </>
+              )}
+            </div>
           </button>
+          
+          {selectedInterests.length === 0 && (
+            <p className="text-sm text-secondary-500 dark:text-secondary-300 mt-3">
+              💡 İlgi alanlarınızı seçerek kişiselleştirilmiş içerik deneyimi yaşayın
+            </p>
+          )}
         </div>
       </form>
     </div>

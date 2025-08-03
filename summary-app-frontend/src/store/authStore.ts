@@ -45,12 +45,14 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      user: null,
-      token: null,
-      isLoading: false,
-      isAuthenticated: false,
-      error: null,
+    (set, get) => {
+      console.log('🏪 Auth store initializing...');
+      return {
+        user: null,
+        token: null,
+        isLoading: false,
+        isAuthenticated: false,
+        error: null,
 
       login: async (data: LoginData) => {
         if (!data?.email || !data?.password) {
@@ -61,28 +63,17 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.login(data);
-          console.log('Login response received:', response);
           
           if (!response?.user || !response?.access_token) {
-            console.error('Invalid response structure:', response);
             throw new Error('Geçersiz sunucu yanıtı');
           }
           
-          console.log('Setting auth state with token:', response.access_token);
           set({
             user: response.user,
             token: response.access_token,
             isAuthenticated: true,
             isLoading: false
           });
-          
-          console.log('Auth state set successfully');
-          
-          // Debug: Check if localStorage was updated
-          setTimeout(() => {
-            const stored = localStorage.getItem('auth-storage');
-            console.log('After setting state, localStorage contains:', stored);
-          }, 100);
         } catch (error: any) {
           console.error('Login error:', error);
           set({
@@ -96,8 +87,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       register: async (data: RegisterData) => {
-        if (!data?.email || !data?.password || !data?.name) {
-          set({ error: 'Tüm alanlar gereklidir', isLoading: false });
+        if (!data?.email || !data?.password) {
+          set({ error: 'Email ve şifre gereklidir', isLoading: false });
           return;
         }
 
@@ -208,15 +199,14 @@ export const useAuthStore = create<AuthState>()(
           error: null
         });
       }
-    }),
+    };
+  },
     {
       name: 'auth-storage',
       storage: {
         getItem: (name: string) => {
           try {
-            const value = localStorage.getItem(name);
-            console.log('Storage getItem:', name, value);
-            return value;
+            return localStorage.getItem(name);
           } catch (error) {
             console.warn('Storage getItem failed:', error);
             return null;
@@ -224,17 +214,8 @@ export const useAuthStore = create<AuthState>()(
         },
         setItem: (name: string, value: string) => {
           try {
-            console.log('Storage setItem - name:', name);
-            console.log('Storage setItem - value type:', typeof value);
-            console.log('Storage setItem - value:', value);
-            
-            // Ensure we're storing a string
             const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
             localStorage.setItem(name, stringValue);
-            
-            // Verify storage
-            const stored = localStorage.getItem(name);
-            console.log('Verified stored value:', stored);
           } catch (error) {
             console.warn('Storage setItem failed:', error);
           }
@@ -247,19 +228,16 @@ export const useAuthStore = create<AuthState>()(
           }
         },
       },
-      partialize: (state) => {
-        const partialState = {
-          user: state.user,
-          token: state.token,
-          isAuthenticated: state.isAuthenticated
-        };
-        console.log('Partializing state:', partialState);
-        return partialState;
-      },
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated
+      }),
       onRehydrateStorage: () => (state, error) => {
+        console.log('🔄 Zustand rehydrating...', { state, error });
+        
         if (error) {
-          console.error('Zustand rehydration error:', error);
-          // Clear corrupted storage
+          console.error('❌ Rehydration error:', error);
           try {
             localStorage.removeItem('auth-storage');
           } catch (clearError) {
@@ -268,56 +246,70 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
-        console.log('Zustand rehydrating state:', state);
-        
-        // Validate rehydrated state
         if (state) {
-          try {
-            // Validate token format
-            if (state.token && (typeof state.token !== 'string' || state.token.length < 10)) {
-              console.warn('Invalid token format, clearing auth');
-              state.user = null;
-              state.token = null;
-              state.isAuthenticated = false;
+          console.log('📦 Rehydrating state:', {
+            hasUser: !!state.user,
+            hasToken: !!state.token,
+            isAuthenticated: state.isAuthenticated,
+            tokenLength: state.token?.length,
+            userStructure: state.user ? Object.keys(state.user) : null
+          });
+          
+          // If no state but localStorage has data, try to restore manually
+          if (!state.user && !state.token) {
+            console.log('🔧 Empty state detected, checking localStorage manually...');
+            try {
+              const storedData = localStorage.getItem('auth-storage');
+              if (storedData) {
+                const parsed = JSON.parse(storedData);
+                console.log('📱 Manual localStorage check:', parsed);
+                
+                if (parsed.state && parsed.state.user && parsed.state.token) {
+                  console.log('🔄 Restoring state from localStorage manually');
+                  state.user = parsed.state.user;
+                  state.token = parsed.state.token;
+                  state.isAuthenticated = parsed.state.isAuthenticated;
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to manually restore from localStorage:', e);
             }
-            
-            // Check if token exists but user doesn't, or vice versa
-            else if ((state.token && !state.user) || (!state.token && state.user)) {
-              console.warn('Inconsistent auth state detected, clearing storage');
-              state.user = null;
-              state.token = null;
-              state.isAuthenticated = false;
-            }
-            
-            // Validate user object structure if it exists
-            else if (state.user && (typeof state.user !== 'object' || !state.user.id || !state.user.email)) {
-              console.warn('Invalid user object in storage, clearing');
-              state.user = null;
-              state.token = null;
-              state.isAuthenticated = false;
-            }
-            
-            // Ensure isAuthenticated is consistent with token/user presence
-            else if (state.isAuthenticated !== (!!state.token && !!state.user)) {
-              console.warn('Fixing inconsistent isAuthenticated state');
-              state.isAuthenticated = !!(state.token && state.user);
-            }
-            
-            console.log('Final rehydrated state:', {
-              hasToken: !!state.token,
-              hasUser: !!state.user,
-              isAuthenticated: state.isAuthenticated
-            });
-          } catch (validationError) {
-            console.error('Error validating rehydrated auth state:', validationError);
-            // Reset to safe state
-            state.user = null;
-            state.token = null;
+          }
+          
+          // Validate auth state consistency
+          const hasValidToken = state.token && typeof state.token === 'string' && state.token.length > 10;
+          const hasValidUser = state.user && typeof state.user === 'object' && 
+            (state.user.id || (state.user as any)._id) && state.user.email;
+          
+          console.log('🔍 Validation details:', {
+            hasValidToken,
+            hasValidUser,
+            userKeys: state.user ? Object.keys(state.user) : null,
+            userId: state.user?.id || (state.user as any)?._id,
+            userEmail: state.user?.email
+          });
+          
+          if (hasValidToken && hasValidUser) {
+            state.isAuthenticated = true;
+            console.log('✅ Auth state valid, user authenticated');
+          } else {
+            console.log('❌ Invalid auth state - not clearing immediately to prevent logout loops');
+            // Don't clear state immediately to prevent constant logout loops
+            // Just mark as not authenticated but keep the token for debugging
             state.isAuthenticated = false;
-            state.error = null;
           }
         } else {
-          console.log('No state to rehydrate, starting with clean state');
+          console.log('🆕 No state to rehydrate, checking localStorage manually...');
+          // Manual fallback when Zustand fails completely
+          try {
+            const storedData = localStorage.getItem('auth-storage');
+            if (storedData) {
+              const parsed = JSON.parse(storedData);
+              console.log('📱 Fallback localStorage data:', parsed);
+            }
+          } catch (e) {
+            console.warn('Failed fallback localStorage check:', e);
+          }
         }
       }
     }

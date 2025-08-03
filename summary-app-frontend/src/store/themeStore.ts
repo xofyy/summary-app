@@ -19,11 +19,22 @@ const getSystemTheme = (): boolean => {
 
 const applyTheme = (isDark: boolean) => {
   if (typeof document !== 'undefined') {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Add transition class temporarily for smooth animation
+    document.documentElement.classList.add('theme-transitioning');
+    
+    // Use requestAnimationFrame for smoother transitions
+    requestAnimationFrame(() => {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Remove transition class after animation completes
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 400);
+    });
   }
 };
 

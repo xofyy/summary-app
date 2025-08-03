@@ -39,7 +39,7 @@ const Header: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-heading font-semibold bg-gradient-to-r from-secondary-900 to-secondary-700 dark:from-white dark:to-secondary-200 bg-clip-text text-transparent">
+                <h1 className="text-xl font-heading font-semibold text-secondary-900 dark:text-white">
                   Summary AI
                 </h1>
                 <p className="text-2xs text-secondary-500 dark:text-secondary-400 -mt-1">
@@ -92,10 +92,10 @@ const Header: React.FC = () => {
                       </span>
                     </div>
                     <div className="hidden lg:block">
-                      <p className="text-sm font-medium text-secondary-900">
+                      <p className="text-sm font-medium text-secondary-900 dark:text-white">
                         {user?.email?.split('@')[0]}
                       </p>
-                      <p className="text-2xs text-secondary-500">
+                      <p className="text-2xs text-secondary-500 dark:text-secondary-400">
                         {user?.interests?.length || 0} ilgi alanı
                       </p>
                     </div>
@@ -189,7 +189,7 @@ const Header: React.FC = () => {
                           {user?.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-sm text-secondary-600">{user?.email}</span>
+                      <span className="text-sm text-secondary-600 dark:text-secondary-300">{user?.email}</span>
                     </div>
                     <button
                       onClick={() => {

@@ -14,6 +14,7 @@ export interface AuthResponse {
   user: {
     id: string;
     email: string;
+    name: string;
     interests: string[];
   };
   access_token: string;
@@ -55,6 +56,7 @@ export class AuthService {
       user: {
         id: user._id.toString(),
         email: user.email,
+        name: user.name,
         interests: user.interests || [],
       },
       access_token: this.jwtService.sign(payload),

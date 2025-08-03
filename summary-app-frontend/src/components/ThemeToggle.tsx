@@ -1,62 +1,48 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useThemeStore } from '../store/themeStore';
 
 const ThemeToggle: React.FC = () => {
-  const { theme, isDarkMode, setTheme } = useThemeStore();
+  const { isDarkMode, setTheme, theme } = useThemeStore();
 
-  const toggleOptions = [
-    {
-      value: 'light' as const,
-      label: 'Light',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-    },
-    {
-      value: 'dark' as const,
-      label: 'Dark',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      ),
-    },
-    {
-      value: 'system' as const,
-      label: 'System',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-    },
-  ];
+  const toggleTheme = () => {
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
 
   return (
-    <div className="relative">
-      <div className="flex items-center bg-secondary-100 dark:bg-secondary-800 rounded-xl p-1 transition-colors">
-        {toggleOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setTheme(option.value)}
-            className={`
-              relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-              ${theme === option.value
-                ? 'bg-white dark:bg-secondary-700 text-primary-600 dark:text-primary-400 shadow-soft'
-                : 'text-secondary-600 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400'
-              }
-            `}
-            title={`Switch to ${option.label.toLowerCase()} mode`}
-          >
-            <span className="flex items-center justify-center">
-              {option.icon}
-            </span>
-            <span className="hidden sm:inline">{option.label}</span>
-          </button>
-        ))}
-      </div>
+    <div className="flex items-center space-x-2">
+      <span className="text-xs text-secondary-600 dark:text-secondary-300">
+        {isDarkMode ? '🌙' : '☀️'}
+      </span>
+      <button
+        onClick={toggleTheme}
+        className="relative inline-flex items-center w-14 h-7 bg-secondary-200 dark:bg-secondary-700 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-inner hover:bg-secondary-300 dark:hover:bg-secondary-600"
+        title={isDarkMode ? 'Açık temaya geç' : 'Koyu temaya geç'}
+      >
+        <span className="sr-only">Tema değiştir</span>
+        <div className={`
+          inline-block w-5 h-5 transform transition-all duration-300 ease-in-out rounded-full shadow-lg
+          ${isDarkMode 
+            ? 'translate-x-8 bg-gradient-to-br from-primary-400 to-purple-500 scale-110' 
+            : 'translate-x-1 bg-gradient-to-br from-yellow-400 to-orange-500 scale-100'
+          }
+        `}>
+          <div className="flex items-center justify-center w-full h-full">
+            {isDarkMode ? (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+              </svg>
+            ) : (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
+        </div>
+      </button>
+      <span className="text-xs text-secondary-600 dark:text-secondary-300 min-w-[40px]">
+        {isDarkMode ? 'Koyu' : 'Açık'}
+      </span>
     </div>
   );
 };

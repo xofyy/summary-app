@@ -49,29 +49,31 @@ api.interceptors.request.use(
       return Promise.reject(new Error('No network connection'));
     }
 
-    // Safe localStorage access with fallback
+    // Add auth token if available
     try {
       const authStorage = localStorage.getItem('auth-storage');
-      console.log('Raw auth storage:', authStorage);
+      console.log('🔑 API interceptor - raw storage:', authStorage);
       
-      if (authStorage && typeof authStorage === 'string') {
+      if (authStorage) {
         const parsed = JSON.parse(authStorage);
-        console.log('Parsed auth storage:', parsed);
-        
         const state = parsed?.state || parsed; // Handle both formats
-        console.log('State extracted:', state);
+        console.log('🔑 API interceptor - parsed state:', {
+          hasToken: !!state?.token,
+          isAuthenticated: state?.isAuthenticated,
+          tokenPreview: state?.token?.substring(0, 20) + '...'
+        });
         
-        if (state?.token) {
+        if (state?.token && state?.isAuthenticated) {
           config.headers.Authorization = `Bearer ${state.token}`;
-          console.log('Authorization header set:', config.headers.Authorization);
+          console.log('✅ Authorization header added');
         } else {
-          console.log('No token found in state');
+          console.log('❌ No valid auth token found');
         }
       } else {
-        console.log('No auth storage found');
+        console.log('🔑 No auth storage found');
       }
     } catch (error) {
-      console.warn('Error parsing auth storage, continuing without token:', error);
+      console.warn('Error parsing auth storage:', error);
       // Clear corrupted storage
       try {
         localStorage.removeItem('auth-storage');
@@ -93,11 +95,19 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     // Handle authentication errors
     if (error.response?.status === 401) {
+      console.log('🚨 401 Unauthorized received!', {
+        url: error.config?.url,
+        method: error.config?.method,
+        currentPath: window.location.pathname
+      });
       try {
         localStorage.removeItem('auth-storage');
-        // Only redirect if we're not already on the login page
-        if (!window.location.pathname.includes('/login')) {
+        // Only redirect if we're not already on auth pages
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+          console.log('🔄 Redirecting to login due to 401');
           window.location.href = '/login';
+        } else {
+          console.log('⏭️ Already on auth page, not redirecting');
         }
       } catch (storageError) {
         console.warn('Error clearing auth storage:', storageError);

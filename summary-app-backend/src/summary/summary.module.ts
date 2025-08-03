@@ -5,6 +5,7 @@ import { SummaryService } from './summary.service';
 import { SummaryFallbackService } from './summary-fallback.service';
 import { Summary, SummarySchema } from '../content/schemas/summary.schema';
 import { Article, ArticleSchema } from '../content/schemas/article.schema';
+import { Source, SourceSchema } from '../content/schemas/source.schema';
 import { AiModule } from '../ai/ai.module';
 
 @Module({
@@ -12,6 +13,7 @@ import { AiModule } from '../ai/ai.module';
     MongooseModule.forFeature([
       { name: Summary.name, schema: SummarySchema },
       { name: Article.name, schema: ArticleSchema },
+      { name: Source.name, schema: SourceSchema },
     ]),
     AiModule,
   ],

@@ -25,6 +25,11 @@ export class SummaryController {
     return this.summaryService.getSummariesByUserInterests(userInterests, pageNum, limitNum);
   }
 
+  @Get('stats')
+  async getStats(@Request() req) {
+    return this.summaryService.getStats(req.user.id);
+  }
+
   @Get(':id')
   async getSummary(@Param('id') id: string) {
     return this.summaryService.getSummaryById(id);

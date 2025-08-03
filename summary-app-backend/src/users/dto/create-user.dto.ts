@@ -8,6 +8,10 @@ export class CreateUserDto {
   @MinLength(6)
   password: string;
 
+  @IsString()
+  @MinLength(1)
+  name: string;
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

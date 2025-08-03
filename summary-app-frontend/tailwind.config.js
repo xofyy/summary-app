@@ -32,6 +32,15 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
         },
+        // Better contrast colors for text
+        text: {
+          'primary-light': '#1f2937',
+          'primary-dark': '#f9fafb',
+          'secondary-light': '#4b5563',
+          'secondary-dark': '#d1d5db',
+          'muted-light': '#6b7280',
+          'muted-dark': '#9ca3af',
+        },
         accent: {
           50: '#fefce8',
           100: '#fef9c3',

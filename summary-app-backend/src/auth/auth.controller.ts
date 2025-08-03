@@ -29,6 +29,7 @@ export class AuthController {
     return {
       id: req.user._id.toString(),
       email: req.user.email,
+      name: req.user.name,
       interests: req.user.interests || [],
     };
   }

@@ -2,6 +2,7 @@
 export interface User {
   id: string;
   email: string;
+  name: string;
   interests: string[];
 }
 
@@ -18,6 +19,7 @@ export interface LoginData {
 export interface RegisterData {
   email: string;
   password: string;
+  name: string;
   interests?: string[];
 }
 
