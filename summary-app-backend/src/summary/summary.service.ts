@@ -113,7 +113,14 @@ export class SummaryService {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const [totalSummaries, totalSources, todaySummaries, avgReadTime] = await Promise.all([
+      const [
+        totalSummaries, 
+        totalSources, 
+        todaySummaries, 
+        avgReadTime,
+        totalReadCount,
+        lastWeekSummaries
+      ] = await Promise.all([
         this.summaryModel.countDocuments().exec(),
         this.sourceModel.countDocuments().exec(),
         this.summaryModel.countDocuments({
@@ -121,16 +128,32 @@ export class SummaryService {
         }).exec(),
         this.summaryModel.aggregate([
           { $group: { _id: null, avgReads: { $avg: '$readCount' } } }
-        ]).exec()
+        ]).exec(),
+        this.summaryModel.aggregate([
+          { $group: { _id: null, totalReads: { $sum: '$readCount' } } }
+        ]).exec(),
+        this.summaryModel.countDocuments({
+          createdAt: { 
+            $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }).exec()
       ]);
 
-      const avgReadTimeMinutes = avgReadTime.length > 0 ? Math.round(avgReadTime[0].avgReads * 0.5) : 2;
+      // Calculate average read time based on actual data
+      const avgReadTimeMinutes = avgReadTime.length > 0 
+        ? Math.max(1, Math.round(avgReadTime[0].avgReads * 0.3)) 
+        : 2;
+
+      const totalReads = totalReadCount.length > 0 ? totalReadCount[0].totalReads : 0;
 
       return {
         totalSummaries,
         totalSources,
         todaySummaries,
-        avgReadTime: avgReadTimeMinutes
+        avgReadTime: avgReadTimeMinutes,
+        totalReads,
+        lastWeekSummaries,
+        lastUpdated: new Date().toISOString()
       };
     } catch (error) {
       console.error('Error getting stats:', error);
@@ -139,7 +162,10 @@ export class SummaryService {
         totalSummaries: 0,
         totalSources: 0,
         todaySummaries: 0,
-        avgReadTime: 2
+        avgReadTime: 2,
+        totalReads: 0,
+        lastWeekSummaries: 0,
+        lastUpdated: new Date().toISOString()
       };
     }
   }

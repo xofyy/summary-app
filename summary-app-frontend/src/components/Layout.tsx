@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NetworkStatusIndicator from './NetworkStatusIndicator';
 import ThemeToggle from './ThemeToggle';
 import { useAuthStore } from '../store/authStore';
+import { api } from '../utils/api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,14 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [stats, setStats] = useState({
+    totalSummaries: 0,
+    totalSources: 0,
+    todaySummaries: 0,
+    totalReads: 0,
+    lastUpdated: null as string | null
+  });
+  const [statsLoading, setStatsLoading] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
 
@@ -45,6 +54,46 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isCurrentPath = (path: string) => {
     return location.pathname === path;
+  };
+
+  // Load stats when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadStats();
+    }
+  }, [isAuthenticated]);
+
+  // Auto-refresh stats every 60 seconds for sidebar
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const interval = setInterval(() => {
+      loadStats(true); // Silent refresh
+    }, 60000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const loadStats = async (silent: boolean = false) => {
+    try {
+      if (!silent) setStatsLoading(true);
+      const response = await api.get('/summaries/stats');
+      setStats(response.data);
+    } catch (err: any) {
+      console.error('Load stats failed:', err);
+      // Use fallback stats if API fails
+      if (!silent) {
+        setStats({
+          totalSummaries: 0,
+          totalSources: 0,
+          todaySummaries: 0,
+          totalReads: 0,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+    } finally {
+      if (!silent) setStatsLoading(false);
+    }
   };
 
   return (
@@ -102,15 +151,44 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       <p className="text-xs opacity-80 font-medium">Hoş geldin</p>
                       <p className="font-semibold truncate">{user?.name || 'Kullanıcı'}</p>
                     </div>
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => loadStats()}
+                        disabled={statsLoading}
+                        className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+                        title="İstatistikleri Yenile"
+                      >
+                        <svg className={`w-3 h-3 text-white ${statsLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center">
-                      <p className="text-lg font-bold">12</p>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center relative">
+                      {statsLoading && (
+                        <div className="absolute inset-0 bg-white/20 rounded-lg flex items-center justify-center">
+                          <div className="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                      <p className="text-lg font-bold">{stats.totalSummaries}</p>
                       <p className="text-xs opacity-75">Özet</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center">
-                      <p className="text-lg font-bold">3</p>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-center relative">
+                      {statsLoading && (
+                        <div className="absolute inset-0 bg-white/20 rounded-lg flex items-center justify-center">
+                          <div className="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                      <p className="text-lg font-bold">{stats.totalSources}</p>
                       <p className="text-xs opacity-75">Kaynak</p>
+                    </div>
+                  </div>
+                  {/* Auto-refresh indicator */}
+                  <div className="flex justify-center mt-2">
+                    <div className="flex items-center space-x-1 text-white/60 text-xs">
+                      <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
+                      <span>60s</span>
                     </div>
                   </div>
                 </div>

@@ -32,8 +32,12 @@ const Home: React.FC = () => {
     totalSummaries: 0,
     totalSources: 0,
     todaySummaries: 0,
-    avgReadTime: 0
+    avgReadTime: 0,
+    totalReads: 0,
+    lastWeekSummaries: 0,
+    lastUpdated: null as string | null
   });
+  const [statsLoading, setStatsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
@@ -50,19 +54,38 @@ const Home: React.FC = () => {
     }
   }, [page, searchTerm, selectedCategory, sortBy, isAuthenticated]);
 
-  const loadStats = async () => {
+  // Auto-refresh stats every 30 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const interval = setInterval(() => {
+      loadStats(true); // Silent refresh
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const loadStats = async (silent: boolean = false) => {
     try {
+      if (!silent) setStatsLoading(true);
       const response = await api.get('/summaries/stats');
       setStats(response.data);
     } catch (err: any) {
       console.error('Load stats failed:', err);
       // Use fallback stats if API fails
-      setStats({
-        totalSummaries: summaries.length || 0,
-        totalSources: 3,
-        todaySummaries: 0,
-        avgReadTime: 2
-      });
+      if (!silent) {
+        setStats({
+          totalSummaries: summaries.length || 0,
+          totalSources: 3,
+          todaySummaries: 0,
+          avgReadTime: 2,
+          totalReads: 0,
+          lastWeekSummaries: 0,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+    } finally {
+      if (!silent) setStatsLoading(false);
     }
   };
 
@@ -92,6 +115,8 @@ const Home: React.FC = () => {
       
       if (page === 1) {
         setSummaries(summariesData);
+        // Refresh stats when loading new summaries
+        loadStats(true);
       } else {
         setSummaries(prev => [...prev, ...summariesData]);
       }
@@ -269,69 +294,109 @@ const Home: React.FC = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stats-mobile">
-        <div className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="relative flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <div className="relative bg-white/70 dark:bg-secondary-800/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-secondary-100 dark:border-secondary-700">
+        {/* Stats Header with Refresh Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-purple-500 rounded-xl flex items-center justify-center shadow-sm">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">{stats.totalSummaries}</p>
-              <p className="text-white/80 text-sm font-medium">Toplam Özet</p>
-            </div>
+            <h2 className="text-xl font-bold text-secondary-900 dark:text-white">Canlı İstatistikler</h2>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+          <div className="flex items-center space-x-3">
+            {stats.lastUpdated && (
+              <span className="text-secondary-500 dark:text-secondary-400 text-xs">
+                Son güncelleme: {new Date(stats.lastUpdated).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <button
+              onClick={() => loadStats()}
+              disabled={statsLoading}
+              className="p-2 bg-secondary-100 dark:bg-secondary-700 hover:bg-secondary-200 dark:hover:bg-secondary-600 rounded-lg transition-colors disabled:opacity-50 text-secondary-600 dark:text-secondary-300"
+              title="İstatistikleri Yenile"
+            >
+              <svg className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
         </div>
-
-        <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:rotate-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="relative flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" />
-              </svg>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stats-mobile">
+          <div className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-1">{stats.totalSummaries}</p>
+                <p className="text-white/80 text-sm font-medium">Toplam Özet</p>
+              </div>
             </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">{stats.totalSources}</p>
-              <p className="text-white/80 text-sm font-medium">RSS Kaynağı</p>
-            </div>
+            <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+
+          <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:rotate-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-1">{stats.totalSources}</p>
+                <p className="text-white/80 text-sm font-medium">RSS Kaynağı</p>
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+          </div>
+
+          <div className="group relative overflow-hidden bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-1">{stats.todaySummaries}</p>
+                <p className="text-white/80 text-sm font-medium">Bugün Özetlenen</p>
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+          </div>
+
+          <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:rotate-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white mb-1">{stats.totalReads}</p>
+                <p className="text-white/80 text-sm font-medium">Toplam Okunma</p>
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+          </div>
         </div>
-
-        <div className="group relative overflow-hidden bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="relative flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">{stats.todaySummaries}</p>
-              <p className="text-white/80 text-sm font-medium">Bugün Özetlenen</p>
-            </div>
+        
+        {/* Auto-refresh indicator */}
+        <div className="flex justify-center mt-4 pt-4 border-t border-secondary-200 dark:border-secondary-600">
+          <div className="flex items-center space-x-2 text-secondary-500 dark:text-secondary-400 text-xs">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>Otomatik yenileme: 30 saniye</span>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
-        </div>
-
-        <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:rotate-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="relative flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white mb-1">{stats.avgReadTime}dk</p>
-              <p className="text-white/80 text-sm font-medium">Ortalama Okuma</p>
-            </div>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
         </div>
       </div>
 
@@ -612,73 +677,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6">
-        {/* Dashboard Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mobile-grid-1">
-          {/* Recent Activity Widget */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/70 dark:bg-secondary-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-soft border border-secondary-100 dark:border-secondary-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">Son Aktiviteler</h3>
-                <span className="text-sm text-secondary-600 dark:text-secondary-300">Son 24 saat</span>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { action: 'Yeni RSS kaynağı eklendi', source: 'TechCrunch', time: '2 saat önce', icon: '📡' },
-                  { action: '5 makale özetlendi', source: 'AI özet', time: '4 saat önce', icon: '🤖' },
-                  { action: 'İlgi alanları güncellendi', source: 'Profil', time: '6 saat önce', icon: '⚙️' },
-                  { action: '12 makale işlendi', source: 'RSS tarama', time: '8 saat önce', icon: '📄' }
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-700/50 transition-colors">
-                    <span className="text-lg">{activity.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-secondary-900 dark:text-white">{activity.action}</p>
-                      <p className="text-xs text-secondary-600 dark:text-secondary-300">{activity.source} • {activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Popular Summaries Widget */}
-          <div>
-            <div className="bg-white/70 dark:bg-secondary-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-soft border border-secondary-100 dark:border-secondary-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">Popüler Özetler</h3>
-                <svg className="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { title: 'AI\'nın Geleceği ve İnsan Yaşamına Etkisi', reads: 234, trend: '+12%' },
-                  { title: 'Blockchain Teknolojisinde Yeni Gelişmeler', reads: 189, trend: '+8%' },
-                  { title: 'Sürdürülebilir Enerji Çözümleri', reads: 156, trend: '+15%' }
-                ].map((item, index) => (
-                  <div key={index} className="group">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium text-secondary-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors cursor-pointer">
-                          {item.title}
-                        </h4>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-xs text-secondary-600 dark:text-secondary-300">{item.reads} okunma</span>
-                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">{item.trend}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-center w-8 h-8 bg-accent-100 dark:bg-accent-900/30 rounded-lg text-accent-600 dark:text-accent-400 text-sm font-bold">
-                        {index + 1}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-8">
+        <div className="space-y-8">
           {summaries.map((summary, index) => (
             <article 
               key={summary._id} 
@@ -837,7 +836,6 @@ const Home: React.FC = () => {
               </button>
             </div>
           )}
-        </div>
         </div>
       )}
     </div>
